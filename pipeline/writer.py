@@ -17,7 +17,7 @@ class GeminiClient:
         self.client = genai.Client(api_key=self.api_key)
         self.model = model
 
-    def generate(self, prompt, max_tokens=2000, retries=3, thinking=False):
+    def generate(self, prompt, max_tokens=2000, retries=2, thinking=False):
         from google.genai import types
         thinking_config = types.ThinkingConfig(thinking_budget=0) if not thinking else None
         last_err = None
@@ -37,12 +37,11 @@ class GeminiClient:
                 last_err = e
                 msg = str(e).lower()
                 if "rate" in msg or "quota" in msg or "429" in msg:
-                    wait = 30 * (attempt + 1)
-                    log.warning(f"Rate limit, жду {wait}с...")
-                    time.sleep(wait)
+                    log.warning("Rate limit, жду 10с...")
+                    time.sleep(10)
                 else:
-                    log.warning(f"LLM ошибка (попытка {attempt + 1}): {e}")
-                    time.sleep(5)
+                    log.warning(f"LLM ошибка: {e}")
+                    time.sleep(3)
         raise RuntimeError(f"LLM не ответил: {last_err}")
 
 
