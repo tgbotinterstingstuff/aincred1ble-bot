@@ -52,9 +52,9 @@ def _strip_markdown_code_blocks(text: str) -> str:
 
 
 def write_short_post(item: dict, llm_client) -> str:
-    """Пишет очень короткий пост (тизер) для Telegram. Без ссылки и хэштегов."""
+    """Пишет пост-разбор (600-900 символов) для Telegram caption. Без ссылки и хэштегов."""
     prompt = build_short_post_prompt(item)
-    text = llm_client.generate(prompt, max_tokens=400)
+    text = llm_client.generate(prompt, max_tokens=700)
     return _strip_markdown_code_blocks(text)
 
 
