@@ -4,8 +4,7 @@
 posts_per_run: 1
 
 # Минимальный балл крутости (0-10), ниже которого пост отбрасывается
-min_score: 7
-
+min_score: 5
 # Сколько кандидатов отдавать в LLM на скоринг за один запуск (экономит лимиты)
 max_candidates_to_score: 25
 
@@ -33,7 +32,7 @@ rss_feeds:
       url: https://hnrss.org/frontpage?q=AI+OR+LLM+OR+Claude+OR+GPT+OR+Gemini
 
 reddit:
-  enabled: true
+  enabled: false
   user_agent: "ai-cases-bot/1.0 (by /u/anonymous)"
   subreddits:
     - ChatGPT
