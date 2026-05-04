@@ -1,0 +1,103 @@
+# Конфигурация бота. Можно править без изменения кода.
+
+# Сколько постов публиковать за один запуск (берёт топ-N по скору крутости)
+posts_per_run: 1
+
+# Минимальный балл крутости (0-10), ниже которого пост отбрасывается
+min_score: 7
+
+# Сколько кандидатов отдавать в LLM на скоринг за один запуск (экономит лимиты)
+max_candidates_to_score: 25
+
+# Сколько последних дней считаем "свежим"
+freshness_days: 3
+
+# Источники. Любой можно отключить, поставив enabled: false
+
+rss_feeds:
+  enabled: true
+  feeds:
+    - name: Anthropic Blog
+      url: https://www.anthropic.com/news/rss.xml
+    - name: OpenAI Blog
+      url: https://openai.com/blog/rss.xml
+    - name: Google AI Blog
+      url: https://blog.google/technology/ai/rss/
+    - name: Hugging Face Blog
+      url: https://huggingface.co/blog/feed.xml
+    - name: DeepMind Blog
+      url: https://deepmind.google/blog/rss.xml
+    - name: The Batch (deeplearning.ai)
+      url: https://www.deeplearning.ai/the-batch/feed/
+    - name: Hacker News (front page AI)
+      url: https://hnrss.org/frontpage?q=AI+OR+LLM+OR+Claude+OR+GPT+OR+Gemini
+
+reddit:
+  enabled: true
+  user_agent: "ai-cases-bot/1.0 (by /u/anonymous)"
+  subreddits:
+    - ChatGPT
+    - ClaudeAI
+    - LocalLLaMA
+    - singularity
+    - PromptEngineering
+    - ArtificialIntelligence
+    - OpenAI
+    - AI_Agents
+  # Минимум апвоутов, чтобы пост попал в кандидаты
+  min_score: 100
+  # Сколько топовых постов брать из каждого сабреддита
+  top_n: 10
+
+hackernews:
+  enabled: true
+  # Минимум очков
+  min_score: 100
+  # Только если в заголовке/тексте упоминается AI
+  keywords: [AI, LLM, GPT, Claude, Gemini, agent, model, neural, prompt]
+
+youtube:
+  enabled: true
+  # Каналы, чьи свежие видео берём в работу
+  # Можно добавить любые ID (берутся из URL после /channel/ или через handle)
+  channels:
+    - name: Matt Wolfe
+      handle: "@mreflow"
+    - name: AI Explained
+      handle: "@aiexplained-official"
+    - name: Wes Roth
+      handle: "@WesRoth"
+    - name: David Shapiro
+      handle: "@DaveShap"
+    - name: All About AI
+      handle: "@AllAboutAI"
+    - name: The AI Daily Brief
+      handle: "@AIDailyBrief"
+  max_videos_per_channel: 3
+
+arxiv:
+  enabled: true
+  categories: [cs.AI, cs.CL, cs.LG]
+  max_results: 10
+  # Только если в abstract есть прикладной кейс
+  keywords: [application, system, framework, agent, real-world, deploy, production]
+
+habr:
+  enabled: true
+  # Хаб AI на Habr
+  hub: artificial_intelligence
+  min_rating: 20
+
+github_trending:
+  enabled: true
+  language: python
+  since: daily  # daily | weekly | monthly
+  # Фильтр по теме
+  topics: [llm, ai, agent, ml, gpt, claude]
+
+# Настройки публикации
+telegram:
+  # Использовать parse_mode HTML для красивого форматирования
+  parse_mode: HTML
+  # Отправлять предпросмотр ссылок
+  link_preview: true

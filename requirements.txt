@@ -1,0 +1,7 @@
+requests>=2.32.0
+feedparser>=6.0.11
+PyYAML>=6.0.2
+google-genai>=0.8.0
+youtube-transcript-api>=1.2.4
+beautifulsoup4>=4.12.3
+python-dateutil>=2.9.0
