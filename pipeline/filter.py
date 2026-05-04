@@ -105,6 +105,71 @@ def deduplicate_by_url(items: list) -> list:
     return out
 
 
+# Стоп-слова для дедупликации тем — не учитываются при сравнении
+_STOPWORDS = {
+    "и", "в", "на", "с", "по", "для", "из", "не", "к", "о", "об", "от", "до",
+    "при", "за", "над", "под", "у", "что", "как", "это", "его", "её", "их",
+    "или", "но", "а", "же", "ли", "бы", "ещё",
+    "the", "a", "an", "of", "to", "in", "for", "on", "is", "are", "with",
+    "how", "why", "what", "this", "that", "as", "by", "be", "was", "were",
+    "and", "or", "but", "not", "if", "then", "than", "from", "into",
+}
+
+
+def _title_words(title: str) -> set:
+    """Возвращает множество значимых слов из заголовка (lower, без стоп-слов и коротких)."""
+    if not title:
+        return set()
+    cleaned = re.sub(r"[^\w\sа-яА-ЯёЁ]", " ", title.lower())
+    words = cleaned.split()
+    return {w for w in words if len(w) > 2 and w not in _STOPWORDS}
+
+
+def topic_deduplicate(items: list, similarity_threshold: float = 0.45) -> list:
+    """Убирает почти-дубликаты по теме (похожие заголовки от разных источников).
+
+    Считаем долю общих значимых слов от меньшего набора. Если ≥ threshold —
+    дубликаты. Оставляем item с большим _score; в оставшийся пишем _alt_sources
+    и _alt_urls для возможного использования в выжимке.
+    """
+    if len(items) < 2:
+        return items
+
+    # Сортируем по убыванию скора, чтобы сначала шли «лучшие»
+    items = sorted(items, key=lambda x: x.get("_score", 0), reverse=True)
+    keep = []
+    duplicates_count = 0
+
+    for item in items:
+        words = _title_words(item.get("title", ""))
+        is_dup = False
+        for kept in keep:
+            kept_words = _title_words(kept.get("title", ""))
+            if not words or not kept_words:
+                continue
+            common = len(words & kept_words)
+            if common == 0:
+                continue
+            overlap = common / min(len(words), len(kept_words))
+            if overlap >= similarity_threshold:
+                # Это та же тема — оставляем «kept» (он с большим скором)
+                kept.setdefault("_alt_sources", []).append(item.get("source", ""))
+                kept.setdefault("_alt_urls", []).append(item.get("url", ""))
+                is_dup = True
+                duplicates_count += 1
+                log.info(
+                    f"Тема-дубликат: «{item.get('title','')[:60]}» "
+                    f"≈ «{kept.get('title','')[:60]}» (overlap {overlap:.0%})"
+                )
+                break
+        if not is_dup:
+            keep.append(item)
+
+    if duplicates_count:
+        log.info(f"Дедуплицировано тем: {duplicates_count}")
+    return keep
+
+
 def score_with_llm(items: list, llm_client, max_to_score: int = 25) -> list:
     """Пропускает кандидатов через LLM-скоринг. Возвращает с полем _score."""
     items = [i for i in items if i.get("title") or i.get("raw_text")]
@@ -157,6 +222,10 @@ def filter_pipeline(items: list, llm_client, config: dict) -> list:
     min_score = config.get("min_score", 5)
     items = [i for i in items if i.get("_score", 0) >= min_score]
     items.sort(key=lambda x: x.get("_score", 0), reverse=True)
-
     log.info(f"Выше min_score={min_score}: {len(items)}")
+
+    # Тематическая дедупликация — после скоринга, чтобы оставить лучший по скору
+    items = topic_deduplicate(items)
+    log.info(f"После тематической дедупликации: {len(items)}")
+
     return items
