@@ -9,7 +9,7 @@ log = logging.getLogger(__name__)
 
 
 class GeminiClient:
-    def __init__(self, api_key=None, model="gemini-2.5-flash"):
+    def __init__(self, api_key=None, model="gemini-2.0-flash"):
         from google import genai
         self.api_key = api_key or os.environ.get("GEMINI_API_KEY")
         if not self.api_key:
@@ -36,7 +36,7 @@ class GeminiClient:
             except Exception as e:
                 last_err = e
                 msg = str(e).lower()
-                if "rate" in msg or "quota" in msg or "429" in msg:
+                if "rate" in msg or "quota" in msg or "429" in msg or "resource_exhausted" in msg:
                     log.warning("Rate limit, жду 10с...")
                     time.sleep(10)
                 else:
