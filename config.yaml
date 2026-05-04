@@ -4,9 +4,11 @@
 posts_per_run: 1
 
 # Минимальный балл крутости (0-10), ниже которого пост отбрасывается
-min_score: 3
-# Сколько кандидатов отдавать в LLM на скоринг за один запуск (экономит лимиты)
-max_candidates_to_score: 3
+min_score: 5
+
+# Сколько кандидатов отдавать в LLM на скоринг за один запуск.
+# Для Groq (14400 запросов/день) можно ставить 15-20 без проблем — больше выбор → лучше качество.
+max_candidates_to_score: 15
 
 # Сколько последних дней считаем "свежим"
 freshness_days: 3
@@ -16,6 +18,7 @@ freshness_days: 3
 rss_feeds:
   enabled: true
   feeds:
+    # Корпоративные блоги
     - name: Anthropic Blog
       url: https://www.anthropic.com/news/rss.xml
     - name: OpenAI Blog
@@ -28,10 +31,29 @@ rss_feeds:
       url: https://deepmind.google/blog/rss.xml
     - name: The Batch (deeplearning.ai)
       url: https://www.deeplearning.ai/the-batch/feed/
+
+    # AI-ньюслеттеры с прикладным фокусом — для продвинутой аудитории
+    - name: Latent Space
+      url: https://www.latent.space/feed
+    - name: Import AI (Jack Clark)
+      url: https://importai.substack.com/feed
+    - name: Last Week in AI
+      url: https://lastweekin.ai/feed
+    - name: Don't Worry About The Vase (Zvi)
+      url: https://thezvi.substack.com/feed
+
+    # Личные блоги топовых авторов в AI-инженерии
+    - name: Simon Willison
+      url: https://simonwillison.net/atom/everything/
+    - name: Eugene Yan
+      url: https://eugeneyan.com/rss/
+
+    # Hacker News с фильтром по AI-темам
     - name: Hacker News (front page AI)
       url: https://hnrss.org/frontpage?q=AI+OR+LLM+OR+Claude+OR+GPT+OR+Gemini
 
 reddit:
+  # Reddit блокирует GitHub Actions IPs (403). Включай только при наличии собственного User-Agent или прокси
   enabled: false
   user_agent: "ai-cases-bot/1.0 (by /u/anonymous)"
   subreddits:
