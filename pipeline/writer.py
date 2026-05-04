@@ -1,9 +1,9 @@
-"""Wrapper around Groq API."""
+"""Wrapper around Groq API + функции написания постов и выжимок."""
 import logging
 import os
 import time
 
-from prompts import build_writer_prompt
+from prompts import build_short_post_prompt, build_summary_prompt, build_writer_prompt
 
 log = logging.getLogger(__name__)
 
@@ -41,13 +41,31 @@ class GroqClient:
         raise RuntimeError(f"LLM не ответил: {last_err}")
 
 
-# Backwards-compat alias — main.py импортирует GeminiClient
+# Backwards-compat alias
 GeminiClient = GroqClient
 
 
-def write_post(item, llm_client):
-    prompt = build_writer_prompt(item)
-    text = llm_client.generate(prompt, max_tokens=2000)
+def _strip_markdown_code_blocks(text: str) -> str:
+    """Убирает оборачивающие тройные бэктики если LLM их добавил."""
     bt = chr(96) * 3
-    text = text.replace(bt + "html", "").replace(bt, "").strip()
-    return text
+    return text.replace(bt + "html", "").replace(bt + "txt", "").replace(bt, "").strip()
+
+
+def write_short_post(item: dict, llm_client) -> str:
+    """Пишет очень короткий пост (тизер) для Telegram. Без ссылки и хэштегов."""
+    prompt = build_short_post_prompt(item)
+    text = llm_client.generate(prompt, max_tokens=400)
+    return _strip_markdown_code_blocks(text)
+
+
+def write_summary(item: dict, llm_client) -> str:
+    """Пишет подробную выжимку для .txt файла."""
+    prompt = build_summary_prompt(item)
+    text = llm_client.generate(prompt, max_tokens=3000)
+    return _strip_markdown_code_blocks(text)
+
+
+# Старая функция для совместимости — теперь возвращает короткий пост
+def write_post(item: dict, llm_client) -> str:
+    """DEPRECATED: используй write_short_post + write_summary."""
+    return write_short_post(item, llm_client)
