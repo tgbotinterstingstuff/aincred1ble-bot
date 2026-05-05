@@ -10,7 +10,7 @@ import yaml
 
 from pipeline.collector import collect_all
 from pipeline.filter import filter_pipeline
-from pipeline.writer import GroqClient, write_short_post, write_summary
+from pipeline.writer import FallbackLLMClient, write_short_post, write_summary
 from pipeline.publisher import TelegramPublisher
 from storage import mark_published, stats
 
@@ -73,7 +73,7 @@ def main() -> int:
         return 0
 
     # 2. Скоринг и фильтрация
-    llm = GroqClient()
+    llm = FallbackLLMClient()
     candidates = filter_pipeline(items, llm, config)
     if not candidates:
         log.info("Нет кандидатов выше min_score. Завершаю.")
