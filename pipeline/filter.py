@@ -186,7 +186,7 @@ def score_with_llm(items: list, llm_client, max_to_score: int = 25) -> list:
         try:
             prompt = build_scoring_prompt(item)
             response = llm_client.generate(prompt, max_tokens=50, retries=1)
-            time.sleep(2)  # лёгкий дроссель чтобы не упереться в RPM
+            time.sleep(5)  # дроссель — Gemini free tier держит ~10-15 RPM
             m = re.search(r"\b(10(?:\.0+)?|[0-9](?:\.\d+)?)\b", response)
             score = float(m.group(1)) if m else 0.0
             item["_score"] = score
