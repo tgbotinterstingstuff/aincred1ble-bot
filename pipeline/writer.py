@@ -72,7 +72,7 @@ class GeminiClient:
             return int(float(m.group(1))) + 5
         return default
 
-    def generate(self, prompt, max_tokens=2000, retries=3, thinking=False):
+    def generate(self, prompt, max_tokens=2000, retries=2, thinking=False):
         from google.genai import types
         last_err = None
         for attempt in range(retries):
@@ -92,7 +92,7 @@ class GeminiClient:
             except Exception as e:
                 last_err = e
                 if _is_rate_limit(e):
-                    wait = self._parse_retry_delay(str(e), default=65)
+                    wait = min(self._parse_retry_delay(str(e), default=15), 30)  # кэп 30с
                     log.warning(f"Gemini rate limit, жду {wait}с (попытка {attempt+1}/{retries})...")
                     time.sleep(wait)
                 else:
