@@ -60,7 +60,19 @@ class GeminiClient:
         self.client = genai.Client(api_key=self.api_key)
         self.model = model
 
-    def generate(self, prompt, max_tokens=2000, retries=2, thinking=False):
+    @staticmethod
+    def _parse_retry_delay(msg: str, default: int = 65) -> int:
+        """Извлекает задержку из 'retry in 41.05s' или 'retryDelay': '41s'."""
+        import re as _re
+        m = _re.search(r"retryDelay['\"]:\s*['\"](\d+)s", msg)
+        if m:
+            return int(m.group(1)) + 5
+        m = _re.search(r"retry in (\d+(?:\.\d+)?)\s*s", msg)
+        if m:
+            return int(float(m.group(1))) + 5
+        return default
+
+    def generate(self, prompt, max_tokens=2000, retries=3, thinking=False):
         from google.genai import types
         last_err = None
         for attempt in range(retries):
@@ -80,8 +92,9 @@ class GeminiClient:
             except Exception as e:
                 last_err = e
                 if _is_rate_limit(e):
-                    log.warning("Gemini rate limit, жду 10с...")
-                    time.sleep(10)
+                    wait = self._parse_retry_delay(str(e), default=65)
+                    log.warning(f"Gemini rate limit, жду {wait}с (попытка {attempt+1}/{retries})...")
+                    time.sleep(wait)
                 else:
                     log.warning(f"Gemini ошибка: {e}")
                     time.sleep(3)
