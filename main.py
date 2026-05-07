@@ -10,7 +10,7 @@ import yaml
 
 from pipeline.collector import collect_all
 from pipeline.filter import filter_pipeline
-from pipeline.writer import FallbackLLMClient, write_short_post, write_summary
+from pipeline.writer import GroqClient, write_short_post, write_summary
 from pipeline.publisher import TelegramPublisher
 from storage import mark_published, stats
 
@@ -73,7 +73,7 @@ def main() -> int:
         return 0
 
     # 2. Скоринг и фильтрация
-    llm = FallbackLLMClient()
+    llm = GroqClient()
     candidates = filter_pipeline(items, llm, config)
     if not candidates:
         log.info("Нет кандидатов выше min_score. Завершаю.")
@@ -103,11 +103,19 @@ def main() -> int:
             summary_text = write_summary(item, llm)
             log.info(f"Выжимка ({len(summary_text)} симв.) сгенерирована")
 
-            # 4c. Caption = короткий пост + ссылка на источник
+            # 4c. Caption = короткий пост + явная ссылка на видео
+            # Используем формулировку «Смотреть видео» (или «Источник» для
+            # не-YouTube), чтобы у читателя было прямое приглашение открыть
+            # ролик, а не невнятное «Источник».
             url = item.get("url", "")
             full_caption = short_text
             if url:
-                full_caption += f'\n\n<a href="{url}">Источник</a>'
+                source = item.get("source", "")
+                if "youtube" in url.lower() or "YouTube" in source:
+                    link_label = "Смотреть видео на YouTube"
+                else:
+                    link_label = "Источник"
+                full_caption += f'\n\n<a href="{url}">{link_label}</a>'
 
             # 4d. Сохраняем выжимку в .txt и отправляем как документ
             with tempfile.TemporaryDirectory() as tmpdir:
