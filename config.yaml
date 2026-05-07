@@ -53,30 +53,40 @@ hackernews:
 
 youtube:
   enabled: true
+  # ВАЖНО: channel_id указан явно, потому что _resolve_channel_id через
+  # скрейп страницы /@handle падает на GitHub Actions IP (consent-страница
+  # возвращается без "channelId":"UC..."). Когда channel_id задан в конфиге,
+  # этот шаг пропускается и сразу идёт RSS-feed по channel_id.
   channels:
     # Официальный канал Anthropic — релизы и демо новых фич Claude
     - name: Claude (Anthropic)
       handle: "@claude"
+      channel_id: "UCV03SRZXJEz-hchIAogeJOg"
 
     # IndyDevDan — глубокие разборы Claude Code, sub-agents, MCP, agentic-воркфлоу
     - name: IndyDevDan
       handle: "@indydevdan"
+      channel_id: "UC_x36zCEGilGpB1m-V4gmjg"
 
     # AI Jason — прикладные туториалы по Claude и AI-кодингу
     - name: AI Jason
       handle: "@AIJasonZ"
+      channel_id: "UCrXSVX9a1mj8l0CMLwKgMVw"
 
     # Cole Medin — AI-агенты, n8n + Claude, MCP-серверы
     - name: Cole Medin
       handle: "@ColeMedin"
+      channel_id: "UCMwVTLZIRRUyyVrkjDpn4pA"
 
     # Greg Isenberg — vibe-coding, продукты соло-фаундеров на Claude
     - name: Greg Isenberg
       handle: "@GregIsenberg"
+      channel_id: "UCPjNBjflYl0-HQtUvOx0Ibw"
 
     # Riley Brown — non-dev мейкер, собирает сайты и приложения через Claude/AI
     - name: Riley Brown
       handle: "@rileybrownai"
+      channel_id: "UCMcoud_ZW7cfxeIugBflSBw"
 
   # Чуть больше видео на канал — туториальный контент выходит реже,
   # хочется видеть больше окно за 5 дней.
